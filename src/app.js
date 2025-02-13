@@ -1,28 +1,26 @@
 const express = require("express");
-
+const {authAdmin, authUser} = require("./middlewares/auth")
 const app = express();
 
-app.get("/profile/:profileId",(req,res)=>{
-    console.log(req.params);
-    res.send("Namaste Ram");
-    });
-
-app.post("/profil+e",(req,res)=>{
-res.send("data posted succesfully");
+app.use(["/admin","/user"], authAdmin,authUser,(req,res,next)=>{
+    next();
 });
 
-app.put("/profil(ef)",(req,res)=>{
-    res.send("data upadated succesfully");
-    });
+// app.use("/user",userAdmin,(req,res,next)=>{
+//     next();
+// });
+app.get("/user/getUser",(req,res)=>{
+    res.send("This is new User");
+});
 
-app.patch("/profil*e",(req,res)=>{
-    res.send("data patches are done succesfully");
-    });
+app.get("/admin/getAllData",(req,res)=>{
+    res.send("get All the data");
+});
 
-app.delete("/profile",(req,res)=>{
-        res.send("data deleted succesfully");
+app.get("/admin/deleteUser", (req, res) => {
+    res.send("deleted the data");
         });
 
-app.listen(7777,()=>{
+app.listen(7777, () => {
     console.log("Request from client");
 });
