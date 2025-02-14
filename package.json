@@ -4,8 +4,8 @@
   "description": "node.js, javascript",
   "main": "index.js",
   "scripts": {
-    "start":"node src/app.js",
-    "dev":"nodemon src/app.js"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
   },
   "keywords": [
     "tinder",
@@ -15,6 +15,7 @@
   "author": "Kodandaramudu Jammula, Anusha Kodari",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "mongoose": "^8.10.0"
   }
 }
