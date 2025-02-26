@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 
 const userSchema = new mongoose.Schema({
@@ -56,5 +58,18 @@ const userSchema = new mongoose.Schema({
         default:"https://thumbs.dreamstime.com/z/default-profile-picture-avatar-user-icon-person-head-icons-anonymous-male-female-businessman-photo-placeholder-social-network-272206807.jpg"
     }
 },{timestamps:true});
+
+userSchema.methods.getJWT = async function(){
+    const user = this;
+    const token = await jwt.sign({_id:this._id},'Namaste@nodejs',{expiresIn:'7d'});
+    return token;
+}
+userSchema.methods.validatePassword = async function(passwordSentByUser){
+    const user = this;
+    const passwordHash = user.password;
+    const isPasswordMatch = await bcrypt.compare(
+        passwordSentByUser, passwordHash );
+    return isPasswordMatch;
+}
 
 module.exports = mongoose.model("User",userSchema );

@@ -1,88 +1,91 @@
 const express = require("express");
-
 const { connectDB } = require("./config/database.js");
 const User = require("./models/user.js");
+const { validateSignupData } = require("./utils/validation.js");
+const cookieParser = require("cookie-parser");
+const userAuth = require("./middlewares/auth.js");
+
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
-// if we want to retrive doc from db by emailId or some key values
-app.get("/user",async (req,res)=>{
+
+//Signup API
+app.post("/signup", async (req, res) => {
+  try {
+    const { firstName, lastName, emailId, password, skills } = req.body;
+    //Validate request data
+    validateSignupData(req);
+    //Encrypt the password
+    const passwordHash = await bcrypt.hash(password, 10);
+    console.log(passwordHash);
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+      skills,
+    });
+    await user.save();
+    res.send("User added succesfully");
+  } catch (err) {
+    res.send("Error: " + err.message);
+  }
+});
+
+// LogIn
+app.post("/login", async (req,res)=>{
     try{
-        const users = await User.find({emailId:req.body.emailId});
-        console.log(users);
-        if(users.length>0) {
-             res.send(users);
+        const {emailId,password} = req.body; 
+        const user = await User.findOne({emailId:emailId});
+        if(!user){
+            throw new Error("Invalid Credentials");
         }
-    } catch(err){
-        res.status(404).send("something went wrong")
-    }
-})
-
-//if we want to retrive all uers from the database
-app.get("/feed",async (req,res)=>{
-    try{
-        const users = await User.find({});
-        if(!users){
-            res.send("Users not found")
+        const isPasswordMatch = await user.validatePassword(password);
+        if(isPasswordMatch){
+          //Create a Token and add it to the cookie
+          const token = await user.getJWT();
+          await res.cookie("token",token);
+            res.send("LogIn Successful");       
         } else{
-            res.send(users);
+            throw new Error("Invalid Credentials");
         }
-    } catch(err){
-        res.status(404).send("something went wrong")
+        
+
+    }catch(err){
+        res.send("Error is: "+err.message)
     }
 })
 
-//if we want to delete one user from the database
-app.delete("/user",async (req,res)=>{
-    try{
-          await User.findByIdAndDelete(req.body.userId);
-          res.send("user deleted successfully!!");
-    } catch(err){
-        res.status(404).send("Error is"+err.message);
-    }
-})
-
-//if we want to update the user by userId
-app.patch("/user/:userId",async(req,res)=>{
-    const data = req.body;
-  const userId = req.params.userId;
-
+//Profile API
+app.get("/profile", userAuth,async (req,res)=>{
   try{
-    const ALLOWED_UPDATES = ["skills","password","age","emailId","photoUrl"];
-    const isAllowedUpdates = Object.keys(data).every((k)=>
-    ALLOWED_UPDATES.includes(k));
-    
-    if(!isAllowedUpdates){
-        console.log(isAllowedUpdates);
-        throw new Error("Can not update the data");
-    }
+    const user = req.body;
+    res.send(user);
 
-     const user = await User.findByIdAndUpdate(userId,data,{ runValidators: true } );
-         res.send("User Updated Successfully");
   }catch(err){
-    res.send(err.message);
+    res.send("Error: "+err.message);
   }
 })
 
-//creating a new instance for the model
-app.post("/signup",async (req,res)=>{
-const user = new User(req.body);
-try{
-    await user.save();
-    res.send("User added succesfully");
-} catch (err){
-      res.send("Error is"+err.message);
-}
+//sendConnectionrequest
+app.post("/sendConnectionRequest", userAuth, async (req,res)=>{
+  try{  
+    const user = req.body;
+    res.send(user.firstName +" sent connection request")
+  }catch(err){
+    res.status(400).send("Invalid request!!")
+  }
 })
 
 connectDB()
-.then(() => {
+  .then(() => {
     console.log("DB Connected successfully");
     app.listen(7777, () => {
-        console.log("Request from client");
-    })
-})
-.catch(()=>{
+      console.log("Request from client");
+    });
+  })
+  .catch(() => {
     console.error("not able to connect to database");
-})
+  });
