@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema(
       type: Number,
       min: 18,
     },
+    about:{
+      type:String,
+      maxLength:2000
+    },
     gender: {
       type: String,
       validate(value) {
