@@ -61,7 +61,7 @@ userRouter.get("/feed", userAuth, async (req, res) => {
 
     const page = parseInt(req.query.page) || 0;
     let limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const skip = ((page - 1) * limit,0);
 
     const connectionRequests = await ConnectionRequest.find({
       $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
