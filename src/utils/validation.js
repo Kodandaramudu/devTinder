@@ -17,6 +17,7 @@ const validateEditData = (req) => {
   const editableFieldsData = [
     "firstName",
     "lastName",
+    "gender",
     "skills",
     "age",
     "about",

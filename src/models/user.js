@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema(
     },
     about:{
       type:String,
-      maxLength:2000
+      maxLength:200
     },
     gender: {
       type: String,

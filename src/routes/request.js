@@ -44,10 +44,9 @@ requestRouter.post(
       const data = await connectionRequest.save();
       res.json({
         message:
-          fromUser.firstName +
-          " sent " +
-          toUser.firstName +
-          " connection successfully",
+          fromUser.firstName +" "+
+          `${status}` + " in " +
+          toUser.firstName ,
         data,
       });
     } catch (err) {
@@ -74,7 +73,7 @@ requestRouter.post(
       connectionRequest.status = status;
       const data = await connectionRequest.save();
       res.json({
-        message: loggedInUser.firstName + status + " Your Request",
+        message: loggedInUser.firstName +" "+ `${status}` + " Your Request",
         data,
       });
     } catch (err) {
