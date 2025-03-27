@@ -6,9 +6,15 @@ const User = require("../models/user");
 
 authRouter.post("/signup", async (req, res) => {
   try {
-    const { firstName, lastName, emailId, password, skills, age, about, gender } = req.body;
+    const { firstName, lastName, emailId, password } = req.body;
     //Validate request data
     validateSignupData(req);
+    //Validate if user exist withemailId
+    const IsUserExist = await User.findOne({ emailId: emailId });
+    if (IsUserExist) {
+      throw new Error("User Already Exist");
+    }
+
     //Encrypt the password
     const passwordHash = await bcrypt.hash(password, 10);
     const user = new User({
@@ -16,15 +22,13 @@ authRouter.post("/signup", async (req, res) => {
       lastName,
       emailId,
       password: passwordHash,
-      skills,
-      age,
-      gender,
-      about
     });
-    await user.save();
-    res.send("User added succesfully");
+    const savedUser = await user.save();
+    const token = await savedUser.getJWT();
+    res.cookie("token",token);
+    res.json({message:"User added succesfully", data: savedUser});
   } catch (err) {
-    res.send("Error: " + err.message);
+    res.status(400).send("Error: " + err.message);
   }
 });
 
