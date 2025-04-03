@@ -4,6 +4,8 @@ const userAuth = require("../middlewares/auth");
 const User = require("../models/user");
 const ConnectionRequest = require("../models/connectionRequest");
 
+const sendEmail = require('../utils/sendEmail');
+
 requestRouter.post(
   "/request/send/:status/:toUserId",
   userAuth,
@@ -42,6 +44,11 @@ requestRouter.post(
         status,
       });
       const data = await connectionRequest.save();
+      const emailRes = await sendEmail.run(fromUser.firstName,"A New Connection Request",fromUser.firstName +" "+
+        `${status}` + " in " +
+        toUser.firstName );
+
+      console.log(emailRes);
       res.json({
         message:
           fromUser.firstName +" "+
